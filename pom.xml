@@ -1,0 +1,255 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Licensed to the Apache Software Foundation (ASF) under one
+  ~ or more contributor license agreements.  See the NOTICE file
+  ~ distributed with this work for additional information
+  ~ regarding copyright ownership.  The ASF licenses this file
+  ~ to you under the Apache License, Version 2.0 (the
+  ~ "License"); you may not use this file except in compliance
+  ~ with the License.  You may obtain a copy of the License at
+  ~
+  ~  http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing,
+  ~ software distributed under the License is distributed on an
+  ~ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  ~ KIND, either express or implied.  See the License for the
+  ~ specific language governing permissions and limitations
+  ~ under the License.
+  -->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.apache.archiva</groupId>
+    <artifactId>archiva-parent</artifactId>
+    <version>19-SNAPSHOT</version>
+  </parent>
+  <name>Archiva</name>
+  <artifactId>archiva-site</artifactId>
+  <packaging>pom</packaging>
+  <version>1-SNAPSHOT</version>
+  <url>${siteUrl}</url>
+
+  <properties>
+    <!--
+    <archivaLastSerieVersion>1.3.9</archivaLastSerieVersion>
+    <archivaLastSerieVersionDate>1 July 2014</archivaLastSerieVersionDate>
+    -->
+    <archivaReleaseVersion>2.2.8</archivaReleaseVersion>
+    <archivaReleaseDate>25th May 2022</archivaReleaseDate>
+    <archivaCurrentDevVersion>3.0.0-SNAPSHOT</archivaCurrentDevVersion>
+    <redbackCurrentDevVersion>3.0.0-SNAPSHOT</redbackCurrentDevVersion>
+    <supportedVersions></supportedVersions>
+    <unsupportedVersions>1.X</unsupportedVersions>
+    <siteUrl>https://archiva.apache.org/</siteUrl>
+    <site.cache.path>${user.home}</site.cache.path>
+
+    <newUiDocVersion>${archivaReleaseVersion}</newUiDocVersion>
+
+    <siteRepositoryUrl>scm:git:https://gitbox.apache.org/repos/asf/archiva-web-content.git</siteRepositoryUrl>
+
+    <scmPubCheckoutDirectory>.site-content</scmPubCheckoutDirectory>
+    <scmPublishBranch>asf-staging</scmPublishBranch>
+    <scmPublishPath>/</scmPublishPath>
+
+  </properties>
+
+  <organization>
+    <name>The Apache Software Foundation</name>
+    <url>https://archiva.apache.org/</url>
+  </organization>
+
+  <scm>
+    <connection>scm:git:https://gitbox.apache.org/repos/asf/archiva-site.git</connection>
+    <developerConnection>scm:git:https://gitbox.apache.org/repos/asf/archiva-site.git</developerConnection>
+    <url>https://github.com/apache/archiva-site</url>
+  </scm>
+
+  <distributionManagement>
+    <site>
+      <id>apache.website.svnpub</id>
+      <url>${siteRepositoryUrl}</url>
+    </site>
+  </distributionManagement>
+
+  <repositories>
+    <repository>
+      <id>archiva.snapshots</id>
+      <name>Archiva VM Snapshots Repository</name>
+      <url>https://archiva-repository.apache.org/archiva/repository/snapshots</url>
+      <releases>
+        <enabled>false</enabled>
+      </releases>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+    </repository>
+  </repositories>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-site-plugin</artifactId>
+        <configuration>
+          <skipDeploy>true</skipDeploy>
+          <asciidoc>
+            <!-- optional site-wide AsciiDoc attributes -->
+            <attributes>
+              <icons>font</icons>
+              <source-highlighter>coderay</source-highlighter>
+              <coderay-css>style</coderay-css>
+              <toclevels>2</toclevels>
+            </attributes>
+            <templateDirs>
+              <dir>src/site/slim-templates</dir>
+            </templateDirs>
+          </asciidoc>
+      </configuration>
+      <dependencies>
+        <dependency>
+          <groupId>org.asciidoctor</groupId>
+          <artifactId>asciidoctor-maven-plugin</artifactId>
+          <version>${asciidoctor.maven.plugin.version}</version>
+        </dependency>
+      </dependencies>
+        <executions>
+          <execution>
+            <id>stage-for-scm-publish</id>
+            <phase>post-site</phase>
+            <goals>
+              <goal>stage</goal>
+            </goals>
+            <configuration>
+              <skipDeploy>false</skipDeploy>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-scm-publish-plugin</artifactId>
+        <configuration>
+          <checkinComment>Apache Archiva Main site deployment</checkinComment>
+          <ignorePathsToDelete>
+            <ignorePathToDelete>docs**</ignorePathToDelete>
+            <ignorePathToDelete>ref**</ignorePathToDelete>
+            <ignorePathToDelete>redback**</ignorePathToDelete>
+            <ignorePathsToDelete>components**</ignorePathsToDelete>
+          </ignorePathsToDelete>
+          <scmBranch>${scmPublishBranch}</scmBranch>
+        </configuration>
+        <executions>
+          <execution>
+            <id>scm-publish</id>
+            <phase>site-deploy</phase>
+            <goals>
+              <goal>publish-scm</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-resources-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>copy-resources</id>
+            <phase>pre-site</phase>
+            <goals>
+              <goal>copy-resources</goal>
+            </goals>
+            <configuration>
+              <outputDirectory>${basedir}/target/site</outputDirectory>
+              <resources>
+                <resource>
+                  <directory>src/site/filtered-resources</directory>
+                  <filtering>true</filtering>
+                </resource>
+              </resources>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+    </plugins>
+  </build>
+  <reporting>
+    <excludeDefaults>true</excludeDefaults>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-project-info-reports-plugin</artifactId>
+        <version>${maven-project-info-reports-plugin.version}</version>
+        <reportSets>
+          <reportSet>
+            <reports>
+              <report>ci-management</report>
+              <report>mailing-lists</report>
+              <report>issue-management</report>
+              <report>licenses</report>
+              <report>team</report>
+              <report>scm</report>
+            </reports>
+          </reportSet>
+        </reportSets>
+        <configuration>
+          <anonymousConnection>scm:git:https://github.com/apache/archiva.git</anonymousConnection>
+          <developerConnection>scm:git:https://gitbox.apache.org/repos/asf/archiva.git</developerConnection>
+          <webAccessUrl>https://github.com/apache/archiva</webAccessUrl>
+        </configuration>
+      </plugin>
+    </plugins>
+  </reporting>
+
+  <profiles>
+    <!--
+    This runs a sparse git checkout for the web site content repository that contains only the doc directory.
+    The profile is activated only, if the checkout directory does not exist.
+    The executor runs a shell script.
+    -->
+    <profile>
+      <id>site-checkout</id>
+      <activation>
+        <file>
+          <missing>${scmPubCheckoutDirectory}</missing>
+        </file>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>exec-maven-plugin</artifactId>
+            <version>3.0.0</version>
+            <inherited>false</inherited>
+            <executions>
+              <execution>
+                <id>prepare-checkout</id>
+                <phase>pre-site</phase>
+                <goals>
+                  <goal>exec</goal>
+                </goals>
+                <configuration>
+                  <executable>checkoutSite.sh</executable>
+                  <workingDirectory>${project.basedir}</workingDirectory>
+                  <arguments>
+                    <argument>-d</argument>
+                    <argument>${scmPubCheckoutDirectory}</argument>
+                    <argument>-b</argument>
+                    <argument>${scmPublishBranch}</argument>
+                    <argument>${siteRepositoryUrl}</argument>
+                  </arguments>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
+
+
+</project>

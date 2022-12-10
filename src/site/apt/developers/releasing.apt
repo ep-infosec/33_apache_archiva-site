@@ -1,0 +1,248 @@
+ -----
+ Archiva release process
+ -----
+ -----
+ 2021-12-14
+ -----
+
+~~ Licensed to the Apache Software Foundation (ASF) under one
+~~ or more contributor license agreements.  See the NOTICE file
+~~ distributed with this work for additional information
+~~ regarding copyright ownership.  The ASF licenses this file
+~~ to you under the Apache License, Version 2.0 (the
+~~ "License"); you may not use this file except in compliance
+~~ with the License.  You may obtain a copy of the License at
+~~
+~~   http://www.apache.org/licenses/LICENSE-2.0
+~~
+~~ Unless required by applicable law or agreed to in writing,
+~~ software distributed under the License is distributed on an
+~~ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+~~ KIND, either express or implied.  See the License for the
+~~ specific language governing permissions and limitations
+~~ under the License.
+
+~~ NOTE: For help with the syntax of this file, see:
+~~ http://maven.apache.org/guides/mini/guide-apt-format.html
+
+Archiva release process
+
+ [[1]] Post to the dev list a few days before you plan to do an Archiva release
+
+ [[2]] Recreate the staging repository on archiva-repository.apache.org - make sure that it is not scanned (so that .index* is not created).
+       You should delete the repository and create a new one.
+       Your maven setting must contains the entry to be able to deploy.
+
++-------------
+   <server>
+     <id>archiva-repository.releases</id>
+     <username></username>
+     <password></password>
+   </server>
++-------------
+
+ [[3]] If there are changes in the parent pom, release parent pom – {{https://gitbox.apache.org/repos/asf/archiva-parent.git}}
+
+   * mvn release:prepare (verify that it has been properly tagged)
+
+   * mvn release:perform (verify that it has been deployed correctly in the staging repo)
+
+ [[4]] Update the parent pom version of archiva – {{https://gitbox.apache.org/repos/asf/archiva.git}}
+
+   * change the parent pom version to the archiva-parent version that has just been released
+
+   * commit the changes made
+
+ [[5]] Update the release notes and the site.xml for version changes in archiva-docs
+
+ [[6]] Verify that the webapp-tests are building successfully. \
+     Since it is in a separate profile but inside the Archiva source tree, it will not be released but will still be included in the release tag. If some tests are failing, comment it out first so that only the passing tests are executed when the webapp-tests module are built from the tag.
+
+     Currently, we do not use these tests anymore.
+
+ [[7]] Release archiva.\
+    You should have a GPG agent running (preferred), and confirm it works by running "gpg -ab" (type some text and press Ctrl-D).
+    You my check, if the key is in your keyring: `gpg --list-secret-keys`
+    If you do not have a GPG agent running, make sure that you have the "apache-release" profile set in your settings.xml as shown below.
+
++-------------
+<profile>
+  <id>apache-release</id>
+  <properties>
+    <gpg.passphrase>[GPG_PASSWORD]</gpg.passphrase>
+  </properties>
+</profile>
++-------------
+
+    Set your user credentials for the stage repo in the <servers> section of
+    your settings.xml for {{archiva-repository.releases}}.
+
+    Prepare your environment:
+    We use JDK 8 for compile and publish, as JDK 7 is not supported anymore. 
+
++-------------
+export JAVA_HOME=<PATH_TO_JDK8>
+export PATH=$JAVA_HOME/bin:$PATH
+export MAVEN_OPTS="-Xmx6144m -XX:MaxPermSize=512m" # It may work with less heap, but this is a safe value
+export JAVA_OPT="-Xmx6144m -XX:MaxPermSize=512m" 
++-------------
+
+    Execute 
+
++-------------
+mvn release:prepare
++-------------
+    Check that it has been properly tagged. The tag name must be.. archiva-[VERSION].
+
+    You can rollback with `mvn release:rollback`. If there are errors and you have to change files, you should run `mvn release:rollback`
+    before changing any file.
+
+    If all works fine, set execute the `release:perform` task
+ 
+
++-------------
+export JAVA_HOME=<PATH_TO_JDK8>
+export PATH=$JAVA_HOME/bin:$PATH
++-------------
++-------------
+mvn release:perform
++-------------
+
+    The perform task will push to the repository, if it was successful. After successfully running this task,
+    it's not possible to roll back.
+
+    Download the uploaded files via wget:
+
++-------------
+ARCHV="2.2.4" # Enter the new archiva version
+RELEASE_URL="http://archiva-repository.apache.org/archiva/repository/archiva-releases-stage"
+wget ${RELEASE_URL}/org/apache/archiva/archiva-jetty/${ARCHV}/archiva-jetty-${ARCHV}-bin.tar.gz
+wget ${RELEASE_URL}/org/apache/archiva/archiva-jetty/${ARCHV}/archiva-jetty-${ARCHV}-bin.tar.gz.asc
+wget ${RELEASE_URL}/org/apache/archiva/archiva-jetty/${ARCHV}/archiva-jetty-${ARCHV}-bin.zip
+wget ${RELEASE_URL}/org/apache/archiva/archiva-jetty/${ARCHV}/archiva-jetty-${ARCHV}-bin.zip.asc
+# Verify the signatures:
+gpg -v archiva-jetty-${ARCHV}-bin.zip.asc
+gpg -v archiva-jetty-${ARCHV}-bin.tar.gz.asc
++-------------
+
+    The documentation is deployed as part of the process to the final location for review in the vote:
+
++-------------
+git checkout archiva-${ARCHV} # Checkout the release version of archiva
+cd archiva-docs
+mvn site:site
+mvn site:stage  # Check the content in target/staging
+mkdir <web-content-git>/docs/${ARCHV}
+cp -r target/staging/* <web-content-git>/docs/${ARCHV}/ # Copy to the git web content repository
++-------------
+
+    Reference documentation
+
++-------------
+git checkout archiva-${ARCHV} # Checkout the release version of archiva
+cd archiva-modules
+mvn site:site
+mvn site:stage  # Check the content in target/staging
+mkdir <web-content-git>/ref/${ARCHV}
+cp -r target/staging/* <web-content-git>/ref/${ARCHV}/ # Copy to the git web content repository
++-------------
+
+    Archiva site information
+
+    Update the archiva site ({{https://gitbox.apache.org/repos/asf/archiva-site.git}}) for the versions and release notes URL:
+
+    Mostly these properties of the pom.xml should be edited:
+
++-------------
+  <archivaReleaseVersion>2.2.6</archivaReleaseVersion>
+  <archivaReleaseDate>16th May 2019</archivaReleaseDate>
+  <archivaCurrentDevVersion>3.0.0-SNAPSHOT</archivaCurrentDevVersion>
++-------------
+
+    Release information may be updated.
+    Update Security information.
+
+    Run <<deploySite.sh>>. The script will prepare the site locally and provide information how to check the content before pushing to the remote repository.
+
++-------------
+cd archiva-site
+./deploySite.sh
+# You can check the files locally, if you press y after the message is presented, it will be pushed to the asf-staging branch
++-------------
+
+    The site can be checked at: https://archiva.staged.apache.org/
+    The downloads do not work on the staged site.
+
+    Commit the sources and binaries from <<<org/apache/archiva/archiva-jetty>>> and <<<org/apache/archiva/archiva>>> to the svn distribution tree.
+    First in dev tree: <<<https://dist.apache.org/repos/dist/dev/archiva/>>>
+
++-------------
+svn co https://dist.apache.org/repos/dist/dev/archiva/ archiva-dev-release
+cd archiva-dev-release
+sh ./release-script-svn.sh $ARCHV ${RELEASE_URL}/
+cd $ARCHV/bin
+../../verify.sh
+cd ../src/
+../../verify.sh
+# Check the output
+
+# For parent pom or redback:
+POMV=18  # New Parent POM version
+sh ./release-script-parent-pom.sh $POMV ${RELEASE_URL}/
+REDBV=2.6 # New redback version
+sh ./release-script-redback-svn.sh $REDBV ${RELEASE_URL}/
++-------------
+
+  If the vote passes the binaries must be copied to release tree: <<<https://dist.apache.org/repos/dist/release/archiva>>>
+
+  Call for a vote in the dev list and wait for 72 hrs. for the vote results. 3 binding votes are necessary for the release to be finalized.
+  If the vote fails or needs to be canceled, the version number should not be re-used if the version was made available for public download.
+  After the vote has passed, move the files from dist dev to dist release:
+
++-------------
+svn mv https://dist.apache.org/repos/dist/dev/archiva/${ARCHV} https://dist.apache.org/repos/dist/release/archiva/
+
+# Move also the POM and Redback and Redback Component releases, if there are new ones.
++-------------
+
+  It needs some time until the download packages are available on the CDN.
+
+  Merge the archiva-releases-stage to archiva-releases on archiva-repository.apache.org (Action -> Merge on the stage repository)
+
+  To sync the jars to Maven Central, you need to merge the repository archiva-releases-stage to "Central Rsync Repository"
+
+  Mark the appropriate release version in JIRA as complete.
+
+  When the new download packages are available over the download page you can remove previous versions from {{https:d//dist.apache.org/repos/dist/release/archiva/}}
+
+  Publish the docs:
+
++-------------
+cd archiva-web-content
+git checkout master
+git pull
+git merge asf-staging
+git push
++-------------
+
+  Send out an announcement (Simple Text Email, no Rich-Text) of the release to:
+
+  * users@archiva.apache.org
+
+  * users@maven.apache.org
+
+  * announce@apache.org
+
+  [] 
+
+  If there are security incidents that should be published after release, please check the Apache information {{http://www.apache.org/security/committers.html}}
+  for further actions.
+
+
+  And finally remove old versions from the distribution directory. All versions that are not mentioned in the download page should be removed:
+
++-------------
+svn del -m"Archiving release 2.2.x"  https://dist.apache.org/repos/dist/release/archiva/2.2.x
++-------------
+
+  See also: https://infra.apache.org/release-download-pages.html

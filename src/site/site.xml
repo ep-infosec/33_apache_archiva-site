@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Licensed to the Apache Software Foundation (ASF) under one
+  ~ or more contributor license agreements.  See the NOTICE file
+  ~ distributed with this work for additional information
+  ~ regarding copyright ownership.  The ASF licenses this file
+  ~ to you under the Apache License, Version 2.0 (the
+  ~ "License"); you may not use this file except in compliance
+  ~ with the License.  You may obtain a copy of the License at
+  ~
+  ~  http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing,
+  ~ software distributed under the License is distributed on an
+  ~ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  ~ KIND, either express or implied.  See the License for the
+  ~ specific language governing permissions and limitations
+  ~ under the License.
+  -->
+
+<project>
+  <skin>
+    <groupId>org.apache.maven.skins</groupId>
+    <artifactId>maven-fluido-skin</artifactId>
+    <version>1.11.0</version>
+  </skin>
+
+  <custom combine.children="append">
+    <fluidoSkin>
+      <topBarEnabled>true</topBarEnabled>
+      <sideBarEnabled>false</sideBarEnabled>
+      <copyrightStyle>pull-right</copyrightStyle>
+      <skipGenerationDate>true</skipGenerationDate>
+      <googleSearch>
+        <sitesearch>${project.url}</sitesearch>
+      </googleSearch>
+      <!-- break exec /www/www.apache.org/dyn/mirrors/mirrors.cgi -->
+      <!--twitter>
+        <user>archiva</user>
+        <showUser>true</showUser>
+        <showFollowers>false</showFollowers>
+      </twitter-->
+      <gitHub>
+        <projectId>apache/archiva</projectId>
+        <ribbonOrientation>right</ribbonOrientation>
+        <ribbonColor>gray</ribbonColor>
+      </gitHub>
+    </fluidoSkin>
+
+  </custom>
+  <body>
+      <head>
+        <!-- The font-awesome is used by asciidoc -->
+        <![CDATA[    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.5.0/css/font-awesome.min.css">]]>
+    </head>
+    <menu name="Introduction">
+      <item name="About"                href="/index.html" />
+      <item name="Downloads"            href="/download.html" />
+      <item name="Versions"             href="/versions.html"/>
+      <item name="Mailing Lists"        href="/mailing-lists.html"/>
+      <item name="Security"             href="/security.html"/>
+      <item name="Documentation" href="">
+        <item name="Release ${archivaReleaseVersion}" href="https://archiva.apache.org/docs/${archivaReleaseVersion}/"/>
+        <item name="Dev ${archivaCurrentDevVersion}" href="https://archiva.apache.org/docs/${archivaCurrentDevVersion}/"/>
+      </item>
+    </menu>
+
+    <menu name="Development">
+      <item name="Build Apache Archiva" href="developers/building.html"/>
+      <item name="Get involved"         href="/get-involved.html"/>
+      <item name="How we do things"     href="developers/how-we-do-things.html"/>
+      <item name="Developer Reference">
+        <item name="Archiva ${archivaReleaseVersion}"
+              href="https://archiva.apache.org/ref/${archivaReleaseVersion}/index.html"/>
+        <item name="Archiva ${archivaCurrentDevVersion}"
+              href="https://archiva.apache.org/ref/${archivaCurrentDevVersion}/index.html"/>
+        <item name="Redback ${redbackCurrentDevVersion}"
+              href="https://archiva.apache.org/redback/core/${redbackCurrentDevVersion}/index.html"/>
+      </item>
+      <item name="Redback"              href="redback/index.html"/>
+      <item name="Archiva Components Project"   href="components/index.html"/>
+      <item name="Javascript application Architecture" href="/jsui/index.html">
+        <item name="Rest service"          href="/jsui/rest.html"/>
+        <item name="JS Template loading"   href="/jsui/template-loading.html"/>
+        <item name="i18n"                  href="/jsui/i18n.html"/>
+        <item name="Knockout Binding"      href="/jsui/knockout-binding.html"/>
+        <item name="Generic Javascipts"    href="/jsui/generics-js.html"/>
+      </item>
+      <item name="Releasing"            href="developers/releasing.html"/>
+      <item name="Site Publish"         href="developers/publishing-site.html"/>
+    </menu>
+
+    <menu name="ASF" inherit="bottom">
+      <item name="How Apache Works" href="https://www.apache.org/foundation/how-it-works.html"/>
+      <item name="Foundation" href="https://www.apache.org/foundation/"/>
+      <item name="Sponsoring Apache" href="https://www.apache.org/foundation/sponsorship.html"/>
+      <item name="Thanks" href="https://www.apache.org/foundation/thanks.html"/>
+    </menu>
+
+    <breadcrumbs>
+      <item name="Apache" href="https://www.apache.org" />
+      <item name="Archiva" href="/" />
+    </breadcrumbs>
+
+    <footer>
+      <![CDATA[
+      <div class="row pull-left">Apache Archiva, Archiva, Apache, the Apache feather logo, and the Apache Archiva project logos are trademarks of The Apache Software Foundation.</div>
+      <div class="row">
+        &nbsp;
+      </div>
+      <div class="row">
+      <p>
+        <a href="${project.url}privacy-policy.html">Privacy Policy</a>
+        </p>
+      </div>
+      ]]>
+    </footer>
+  </body>
+</project>
